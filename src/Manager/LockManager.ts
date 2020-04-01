@@ -25,8 +25,7 @@ export const cznlock = async (lockConfig: string | LockConfig, fn) => {
     retryTimeOut = lockConfig.retryTimeOut
     lockLeaseTime = lockConfig.lockLeaseTime
   }
-  const value = Date.now() + lockLeaseTime
-  await lockClient.lock(key, value, retryTimeOut, lockLeaseTime)
+  const {value} = await lockClient.lock(key, retryTimeOut, lockLeaseTime)
 
   try {
     return await fn()

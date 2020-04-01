@@ -45,30 +45,31 @@ export default class RedisLock {
   /**
    * 上锁
    * @param {*} key
-   * @param {*} val
    * @param retryTimeOut 重新尝试加锁时间ms
    * @param {*} expire  锁最长过期时间ms
    */
-  async lock(key, val, retryTimeOut = 0, expire = 0) {
+  async lock(key, retryTimeOut = 0, expire = 0) {
     const start = Date.now();
     const retry = retryTimeOut || this.retryTimeOut
     const lease = expire || this.lockLeaseTime
+    let val = 0
     const self = this;
 
     return (async function intranetLock() {
       try {
+        val = Date.now() + lease
         const result = await self.client.set(key, val, self.expiryMode, lease / 1000, self.setMode);
 
         // 上锁成功
         if (result === 'OK') {
           console.log(`${key} ${val} 上锁成功`)
-          return true
+          return {ok: true, value: val}
         }
 
         // 锁超时
         if ((Date.now() - start) > lease) {
           console.log(`${key} ${val} 上锁重试超时结束`)
-          return false
+          return {ok: false, value: val}
         }
 
         // 循环等待重试
@@ -80,7 +81,7 @@ export default class RedisLock {
       } catch (err) {
         throw new Error(err)
       }
-    })();
+    })()
   }
 
   /**
