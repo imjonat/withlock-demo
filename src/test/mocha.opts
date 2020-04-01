@@ -1,1 +1,1 @@
---compilers ts:ts-node/register --recursive --timeout 10000 --exit
+--compilers ts:ts-node/register --recursive --timeout 100000 --exit

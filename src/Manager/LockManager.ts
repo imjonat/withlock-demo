@@ -1,14 +1,13 @@
 import Redis from 'ioredis'
 import RedisLock from "../utils/RedisLock";
 
-const lockClient = new RedisLock(new Redis(6379, 'localhost'))
+const lockClient = new RedisLock(new Redis(6379, 'localhost'), {lockLeaseTime: 15000, retryTimeOut: 1000})
 
 export type LockConfig = {
   key: string
   retryTimeOut?: number
   lockLeaseTime?: number
 }
-
 
 const LOCK_KEY = `locks:`
 

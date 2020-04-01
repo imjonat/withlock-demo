@@ -10,6 +10,8 @@ describe('normal test', async () => {
   const redisVal = 10
   const mongoVal = 10
   let redisClient = null
+  let count = 1
+  let run  = []
 
 
   before(async () => {
@@ -23,6 +25,10 @@ describe('normal test', async () => {
   beforeEach(async () => {
     await redisClient.setAsync('k', redisVal.toString())
     await Global.updateOne({_id: 'test'}, {$set: {shortIdCounter: mongoVal}}, {upsert: true})
+
+    count = 1
+    run  = []
+
   })
 
   after(() => {
@@ -51,15 +57,22 @@ describe('normal test', async () => {
         console.log(`mongo - out - ` + flag)
       })
     }
-    await Promise.all([doubleMongo(1), doubleMongo(2), doubleRedis(3), doubleRedis(4)])
+    let rate = 1
+    while (count <= 5){
+      run.push(doubleMongo(count), doubleRedis(count))
+      rate *= 2
+      count++
+    }
 
-    expect(await redisClient.getAsync('k')).to.equal((10 * 2 * 2).toString())
-    expect((await Global.findOne({_id: 'test'})).shortIdCounter).to.equal(10 * 2 * 2)
+    await Promise.all(run)
+
+    expect(await redisClient.getAsync('k')).to.equal((redisVal * rate).toString())
+    expect((await Global.findOne({_id: 'test'})).shortIdCounter).to.equal(mongoVal * rate)
   })
   it(`use cznlock`, async () => {
     const doubleRedis = async (flag) => {
       // await withLock({key: `locklocklock`, timeOutInMs: 50000}, async () => {
-      await cznlock({key: `cznlock`, lockLeaseTime: 50000}, async () => {
+      await cznlock(`cznlock`, async () => {
         console.log(`redis - in - ` + flag)
         const val7 = await redisClient.getAsync('k')
         await redisClient.setAsync('k', (parseInt(val7) * 2).toString())
@@ -67,7 +80,7 @@ describe('normal test', async () => {
       })
     }
     const doubleMongo = async (flag) => {
-      await cznlock({key: `cznlock`, lockLeaseTime: 50000}, async () => {
+      await cznlock(`cznlock`, async () => {
         console.log(`mongo - in - ` + flag)
         const global7 = await Global.findOne({_id: 'test'})
         const k = global7.shortIdCounter * 2
@@ -79,9 +92,16 @@ describe('normal test', async () => {
         console.log(`mongo - out - ` + flag)
       })
     }
-    await Promise.all([doubleMongo(1), doubleMongo(2), doubleRedis(3), doubleRedis(4)])
+    let rate = 1
+    while (count <= 5){
+      run.push(doubleMongo(count), doubleRedis(count))
+      rate *= 2
+      count++
+    }
 
-    expect(await redisClient.getAsync('k')).to.equal((10 * 2 * 2).toString())
-    expect((await Global.findOne({_id: 'test'})).shortIdCounter).to.equal(10 * 2 * 2)
+    await Promise.all(run)
+
+    expect(await redisClient.getAsync('k')).to.equal((redisVal * rate).toString())
+    expect((await Global.findOne({_id: 'test'})).shortIdCounter).to.equal(mongoVal * rate)
   })
 })
