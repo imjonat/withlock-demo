@@ -8,8 +8,8 @@ import {Duplex} from "stream"
 Bluebird.promisifyAll(redis.RedisClient.prototype)
 Bluebird.promisifyAll(redis.Multi.prototype);
 
-export function createClient(): AsyncRedisClient {
-  return redis.createClient({host: 'localhost'}) as any
+export function createClient(host = ''): AsyncRedisClient {
+  return redis.createClient({host: host || 'localhost'}) as any
 }
 
 export default createClient

@@ -1,5 +1,4 @@
 {
-  "gameName": "car",
   "database": {
     "url": "mongodb://localhost:27017/car_demo"
   },
