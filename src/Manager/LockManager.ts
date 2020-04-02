@@ -1,7 +1,8 @@
 import Redis from 'ioredis'
 import RedisLock from "../utils/RedisLock";
+import {v4 as uuid} from "uuid";
 
-const lockClient = new RedisLock(new Redis(6379, 'localhost'), {lockLeaseTime: 15000, retryTimeOut: 1000})
+const lockClient = new RedisLock(new Redis(6379, 'localhost'), {lockLeaseTime: 2000000, retryTimeOut: 1})
 
 export type LockConfig = {
   key: string
@@ -31,7 +32,7 @@ export const cznlock = async (lockConfig: string | LockConfig, fn) => {
   } catch (err) {
     throw new Error(err)
   } finally {
-    const unLock = await lockClient.unLock(key, value)
-    console.log('unLock: ', key, value, unLock)
+    const unLockState = await lockClient.unLock(key, value)
+    console.log('unLock: ', key, value, unLockState)
   }
 }

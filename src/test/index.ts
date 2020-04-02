@@ -10,7 +10,8 @@ describe('normal test', async () => {
   const redisVal = 10
   const mongoVal = 10
   let redisClient = null
-  let count = 1
+  const testCount = 50
+  let count = 0
   let run  = []
 
 
@@ -26,7 +27,7 @@ describe('normal test', async () => {
     await redisClient.setAsync('k', redisVal.toString())
     await Global.updateOne({_id: 'test'}, {$set: {shortIdCounter: mongoVal}}, {upsert: true})
 
-    count = 1
+    count = testCount
     run  = []
 
   })
@@ -58,10 +59,10 @@ describe('normal test', async () => {
       })
     }
     let rate = 1
-    while (count <= 5){
+    while (count > 0){
       run.push(doubleMongo(count), doubleRedis(count))
       rate *= 2
-      count++
+      count--
     }
 
     await Promise.all(run)
@@ -93,10 +94,10 @@ describe('normal test', async () => {
       })
     }
     let rate = 1
-    while (count <= 5){
+    while (count > 0){
       run.push(doubleMongo(count), doubleRedis(count))
       rate *= 2
-      count++
+      count--
     }
 
     await Promise.all(run)
